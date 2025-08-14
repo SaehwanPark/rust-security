@@ -61,7 +61,7 @@ We’ll use `nix` crate for Unix process handling:
 ```toml
 # Cargo.toml
 [dependencies]
-nix = "0.27"
+nix = { version = "0.27", default-features = false, features = ["process", "user"] }
 ```
 
 ```rust
@@ -99,6 +99,27 @@ fn main() {
 
 Run the program as root (or using `sudo`) to see the privilege drop in action.
 Confirm the UID change using `id` in code after `setuid`.
+
+### **1.4 Unix Process Operation Refresh**
+
+Note that if you run this code with `sudo` and it forks, you’ll actually have **two processes**:
+
+* The **parent** (privileged, exits quickly)
+* The **child** (unprivileged, keeps running the server)
+
+Because we’re forking and the parent calls `exit` without `wait`ing, the child **isn’t attached to your shell anymore** — it becomes an *orphan*, often adopted by `init` (PID 1 or `systemd`). Thus, `ps` without the right filters doesn’t show it in your current user’s process list. If you ran `ps` without `-e` or `-ef`, you only see processes for your current session/tty. After the fork and `exit` of the parent, the child isn’t attached to your shell and isn’t your session leader, so it doesn’t appear in `ps`’s default output.
+
+Here are how to find it:
+
+```bash
+# assume you compiled your program to `test_privilege`
+ps -ef | grep test_privilege
+```
+
+```bash
+# Since you know it’s bound to `127.0.0.1:8080`:
+sudo lsof -iTCP:8080 -sTCP:LISTEN
+```
 
 ---
 
