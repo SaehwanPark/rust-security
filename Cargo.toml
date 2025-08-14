@@ -4,9 +4,15 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-nix = { version = "0.27", default-features = false, features = [
-  "process",
-  "user",
-] }
-argon2 = "0.5"
+# password hashing with argon2
+argon2 = { version = "0.5", features = ["std"] }
+
+# unix system calls for privilege separation
+nix = { version = "0.30", features = ["process", "user"] }
+
+# random number generation for salt
 rand_core = { version = "0.6", features = ["std"] }
+
+# serialization for user data storage
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
