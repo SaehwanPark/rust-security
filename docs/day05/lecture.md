@@ -178,16 +178,16 @@ flowchart TD
     A([Day 5: Cryptography Fundamentals])
 
     subgraph T[Theory]
-      T1[Primitives<br/>(Symmetric / Asymmetric / Hash / MAC / RNG)]
+      T1[Primitives: Symmetric / Asymmetric / Hash / MAC / RNG]
       T2[Kerckhoffs's Principle]
-      T3[Threat Modeling<br/>(attacker, resources, time horizon)]
+      T3[Threat Modeling: attacker, resources, time horizon]
     end
 
     subgraph L[Lab Path]
-      L1[XOR Cipher<br/>(hello world of crypto)]
-      L2[ECB Mode Demo<br/>(pattern leakage)]
-      L3[AES in CBC Mode<br/>+ PKCS#7 padding + IV]
-      L4[Analysis & Write‑Up<br/>(ECB vs CBC, IV uniqueness)]
+      L1[XOR Cipher: hello world of crypto]
+      L2[ECB Mode Demo: pattern leakage]
+      L3[AES in CBC Mode + PKCS#7 padding + IV]
+      L4[Analysis & Write‑Up: ECB vs CBC, IV uniqueness]
     end
 
     subgraph O[Outputs]
@@ -207,7 +207,7 @@ flowchart TD
 
     %% Side rails / previews
     T1 --> S1[(Secure RNG importance)]
-    L3 -. Preview .-> P1[[AEAD/GCM & AuthN/Integrity (Day 6)]]
+    L3 -. Preview .-> P1[[AEAD/GCM & AuthN/Integrity, Day 6]]
 
     %% Emphasis callouts
     T2 --- C1{{"Assume the adversary knows the system; only the key is secret."}}
@@ -221,31 +221,28 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    classDef label fill:#eee,stroke:#999,color:#333;
+  classDef label fill:#eee,stroke:#999,color:#333;
 
-    subgraph P[Plaintext Blocks]
-      P1[P1]:::label
-      P2[P2]:::label
-      P3[P3]:::label
-    end
+  subgraph P[Plaintext Blocks]
+    P1[P1]:::label
+    P2[P2]:::label
+    P3[P3]:::label
+  end
 
-    IV[(IV)]:::label
+  IV[(IV)]:::label
 
-    IV --> X1([XOR])
-    P1 --> X1 --> E1[[AES-Encrypt(K)]] --> C1[C1]:::label
-    C1 --> X2([XOR])
-    P2 --> X2 --> E2[[AES-Encrypt(K)]] --> C2[C2]:::label
-    C2 --> X3([XOR])
-    P3 --> X3 --> E3[[AES-Encrypt(K)]] --> C3[C3]:::label
+  IV --> X1([XOR])
+  P1 --> X1 --> E1[[AES-Encrypt]] --> C1[C1]:::label
+  C1 --> X2([XOR])
+  P2 --> X2 --> E2[[AES-Encrypt]] --> C2[C2]:::label
+  C2 --> X3([XOR])
+  P3 --> X3 --> E3[[AES-Encrypt]] --> C3[C3]:::label
 
-    note right of IV
-      Random / unique per message
-      (never reused with same key)
-    end
+  %% Notes as regular nodes
+  iv_note["Random / unique per message<br/>(never reused with same key)"]:::label
+  IV -.-> iv_note
 
-    note bottom of P3
-      Pad last block (e.g., PKCS#7)
-    end
+  pad_note["Pad last block (e.g., PKCS#7)"]:::label
+  P3 -.-> pad_note
 
-    %% Decryption mirrors the chain with AES-Decrypt + XOR with previous C
 ```

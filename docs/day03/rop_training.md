@@ -436,7 +436,7 @@ Create `Cargo.toml` and `src/main.rs` mirroring the C layout: a tiny `vuln()` wi
 flowchart LR
   A[Mitigations Recap] --> B[ret2win]
   B --> C[ROP Gadgets]
-  C --> D[system("/bin/sh")]
+  C --> D[System: Shell]
   D --> E[Pivoting]
   E --> F[Re‑enable Mitigations]
   F --> G[Hardening Playbook]

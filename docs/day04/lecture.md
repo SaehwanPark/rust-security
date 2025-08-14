@@ -172,7 +172,7 @@ flowchart TD
 
     %% Privilege Separation
     subgraph PS[Privilege Separation]
-        RP[Privileged Process<br>(root access)] -->|Pass limited capability| UW[Unprivileged Worker<br>(user permissions)]
+        RP[Privileged Process: root access] -->|Pass limited capability| UW[Unprivileged Worker: user permissions]
         UW --> Cap1[Capability: DB Read]
         UW --> Cap2[Capability: File Write]
     end
@@ -180,10 +180,10 @@ flowchart TD
     %% Authentication Flow
     subgraph Auth[Authentication Flow]
         U[User] --> LF[Login Form]
-        LF --> AS[Authentication Server<br>(Argon2 hash verify)]
+        LF --> AS[Authentication Server: Argon2 hash verify]
         AS -->|If valid| AG[Access Granted]
         AS -->|If invalid| LF
-        AG --> MFA[MFA Check<br>(TOTP/Token)]
+        AG --> MFA[MFA Check: TOTP/Token]
         MFA -->|If valid| FA[Final Access]
         MFA -->|If invalid| LF
     end
