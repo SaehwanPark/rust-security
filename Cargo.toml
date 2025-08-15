@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+anyhow = "1"
+
 # password hashing with argon2
 argon2 = { version = "0.5", features = ["std"] }
 
@@ -17,22 +19,25 @@ rand_core = { version = "0.6", features = ["std"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
-# core cryptography
+# core cryptography - modern rustcrypto stack
 aes = "0.8"
 cbc = { version = "0.1", features = ["alloc"] }
 aes-gcm = "0.10"
 
 # utilities
-base64 = "*"
-rand = "*"
-anyhow = "1"
-hex = "*"
+rand = "0.9"
+hex = "0.4"
+base64 = "0.22"
 
-# image processing (for ECB demo)
-image = "*"
+# image processing (for ecb visual demonstration)
+image = { version = "0.25", optional = true }
 
-# cipher traits
-cipher = "*"
+# cipher traits for generic programming
+cipher = { version = "0.4", features = ["block-padding"] }
 
 [dev-dependencies]
-criterion = "*"
+criterion = "0.7"
+
+[features]
+default = []
+image_demo = ["image"]
