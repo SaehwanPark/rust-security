@@ -1,7 +1,3 @@
-Got it — here’s the **Day 5 lab section** designed to flow seamlessly from the lecture and give self-learners deep, hands-on cryptography experience.
-
----
-
 # **Day 5 – Cryptography Fundamentals: Lab & Coding Exercises**
 
 ## **Overview**
