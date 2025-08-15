@@ -192,6 +192,7 @@ fn main() {
 1. Implement **account lockout** after 3 failed logins.
 2. Add **TOTP-based MFA** using the `otpauth` crate.
 3. Store user data in a file with hashed passwords.
+4. If possible, try avoiding `unsafe`
 
 ---
 
