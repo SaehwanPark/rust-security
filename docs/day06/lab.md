@@ -10,7 +10,7 @@
 
 ---
 
-## Project Layout
+## Sample Project Layout For Day 6 Lab
 
 ```
 day06_hmac/
