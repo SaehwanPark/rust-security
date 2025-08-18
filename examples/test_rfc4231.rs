@@ -54,7 +54,7 @@ const RFC4231_VECTORS: &[TestVector] = &[
   TestVector {
     name: "Test Case 5",
     key: "0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c", // 20 bytes of 0x0c
-    data: "546573742057697468205472756e63617469696f6e", // "Test With Truncation"
+    data: "546573742057697468205472756e636174696f6e", // "Test With Truncation"
     expected_sha256: "a3b6167473100ee06e0c796c2955552b", // truncated to 128 bits (16 bytes)
     description: "Test with a truncation of output to 128 bits",
   },
