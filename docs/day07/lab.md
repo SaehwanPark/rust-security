@@ -31,7 +31,7 @@ Keep your code in `examples/day07/` for consistency.
   ```toml
   rsa = { version = "0.9", features = ["sha2"] }
   sha2 = "0.10"
-  rand = "0.8"
+  rand = "0.9"
   ```
 * Use `Oaep::<Sha256>::new()` instead of PKCS#1 v1.5 — it’s safer.
 * Ciphertext size will equal the modulus size (256 bytes for 2048-bit keys).
@@ -120,9 +120,9 @@ Keep your code in `examples/day07/` for consistency.
 
 ## Deliverables
 
-* `examples/day07_rsa.rs` — basic RSA demo.
-* `examples/day07_rsa_bench.rs` — benchmarks for key sizes and padding.
-* `examples/day07_certinfo.rs` — certificate inspector tool.
+* `examples/rsa.rs` — basic RSA demo.
+* `examples/rsa_bench.rs` — benchmarks for key sizes and padding.
+* `examples/certinfo.rs` — certificate inspector tool.
 * Updated Secure Chat with RSA/X25519 exchange.
 
 ---
