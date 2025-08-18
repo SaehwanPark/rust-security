@@ -196,7 +196,7 @@ fn randomness_comparison() {
 
   // generate truly random data of same length
   let mut random_data = vec![0u8; ecb_encrypted.len()];
-  rand::rng().fill_bytes(&mut random_data);
+  rand::thread_rng().fill_bytes(&mut random_data);
 
   // analyze block uniqueness
   let ecb_unique_blocks = ecb_encrypted

@@ -1,7 +1,7 @@
 use aes::Aes128;
 use cbc::{Decryptor, Encryptor};
 use cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit, block_padding::Pkcs7};
-use rand::{RngCore, rng};
+use rand::{RngCore, thread_rng};
 
 // type aliases for convenience
 type Aes128CbcEnc = Encryptor<Aes128>;
@@ -59,8 +59,8 @@ fn iv_importance_demo() {
   // encrypt same plaintext with different ivs (good!)
   let mut iv1 = [0u8; 16];
   let mut iv2 = [0u8; 16];
-  rng().fill_bytes(&mut iv1);
-  rng().fill_bytes(&mut iv2);
+  thread_rng().fill_bytes(&mut iv1);
+  thread_rng().fill_bytes(&mut iv2);
 
   let cipher3 =
     Aes128CbcEnc::new(key.into(), &iv1.into()).encrypt_padded_vec_mut::<Pkcs7>(plaintext);
@@ -84,7 +84,7 @@ fn iv_corruption_demo() {
 
   let key = b"testkey123456789";
   let mut iv = [0u8; 16];
-  rng().fill_bytes(&mut iv);
+  thread_rng().fill_bytes(&mut iv);
 
   let plaintext = b"this is a multi-block message that spans several aes blocks!";
 
@@ -148,7 +148,7 @@ fn chaining_demo() {
 
   let key = b"chaindemokeytest";
   let mut iv = [0u8; 16];
-  rng().fill_bytes(&mut iv);
+  thread_rng().fill_bytes(&mut iv);
 
   // create plaintext with repetitive blocks
   let block1 = b"aaaaaaaaaaaaaaaa"; // 16 bytes
@@ -203,7 +203,7 @@ fn secure_iv_generation() {
   println!("\nmultiple encryptions with random ivs:");
   for i in 0..3 {
     let mut iv = [0u8; 16];
-    rng().fill_bytes(&mut iv);
+    thread_rng().fill_bytes(&mut iv);
 
     let ciphertext =
       Aes128CbcEnc::new(key.into(), &iv.into()).encrypt_padded_vec_mut::<Pkcs7>(plaintext);
@@ -223,7 +223,7 @@ fn padding_awareness_demo() {
 
   let key = b"paddingdemokey12";
   let mut iv = [0u8; 16];
-  rng().fill_bytes(&mut iv);
+  thread_rng().fill_bytes(&mut iv);
 
   // test different message lengths to show padding
   let messages = [

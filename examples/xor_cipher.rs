@@ -121,7 +121,7 @@ fn main() {
   // demonstrate with secure random key
   println!("=== comparison with secure random key ===");
   let mut secure_key = vec![0u8; plain_text.len()]; // one-time pad
-  rand::rng().fill_bytes(&mut secure_key);
+  rand::thread_rng().fill_bytes(&mut secure_key);
 
   let secure_cipher = xor_cipher(plain_text, &secure_key);
   let secure_freq = frequency_analysis(&secure_cipher);

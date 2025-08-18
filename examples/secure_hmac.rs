@@ -36,7 +36,7 @@ impl SecureKey {
 
   pub fn generate_random(key_id: String) -> Self {
     let mut key_data = vec![0u8; 32]; // 256-bit key
-    rand::rng().fill_bytes(&mut key_data);
+    rand::thread_rng().fill_bytes(&mut key_data);
     Self::new(key_id, key_data)
   }
 
@@ -58,7 +58,7 @@ pub struct Nonce {
 impl Nonce {
   pub fn generate() -> Self {
     let mut value = [0u8; NONCE_SIZE];
-    rand::rng().fill_bytes(&mut value);
+    rand::thread_rng().fill_bytes(&mut value);
 
     let timestamp = SystemTime::now()
       .duration_since(UNIX_EPOCH)

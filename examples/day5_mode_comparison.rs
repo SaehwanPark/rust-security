@@ -2,7 +2,7 @@ use aes::Aes128;
 use aes::cipher::{BlockDecrypt, BlockEncrypt, KeyInit, generic_array::GenericArray};
 use cbc::{Decryptor as CbcDecryptor, Encryptor as CbcEncryptor};
 use cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit, block_padding::Pkcs7};
-use rand::{RngCore, rng};
+use rand::{RngCore, thread_rng};
 use std::time::Instant;
 
 // type aliases
@@ -77,7 +77,7 @@ fn side_by_side_comparison() {
 
   let key = b"comparisonkey123";
   let mut iv = [0u8; 16];
-  rng().fill_bytes(&mut iv);
+  thread_rng().fill_bytes(&mut iv);
 
   // create plaintext with obvious patterns
   let plaintext = b"aaaaaaaaaaaaaaaa\
@@ -168,7 +168,7 @@ fn length_comparison() {
 
   let key = b"lengthcompareky1"; // exactly 16 bytes
   let mut iv = [0u8; 16];
-  rng().fill_bytes(&mut iv);
+  thread_rng().fill_bytes(&mut iv);
 
   let test_messages = [
     "short",
@@ -184,7 +184,7 @@ fn length_comparison() {
     let ecb_ciphertext = ecb.encrypt(plaintext);
 
     // use fresh iv for each cbc encryption
-    rng().fill_bytes(&mut iv);
+    thread_rng().fill_bytes(&mut iv);
     let cbc_ciphertext =
       Aes128CbcEnc::new(key.into(), &iv.into()).encrypt_padded_vec_mut::<Pkcs7>(plaintext);
 
@@ -215,11 +215,11 @@ fn performance_comparison() {
 
   let key = b"benchmarkkey1234";
   let mut iv = [0u8; 16];
-  rng().fill_bytes(&mut iv);
+  thread_rng().fill_bytes(&mut iv);
 
   // generate large test data
   let mut large_data = vec![0u8; 1024 * 1024]; // 1mb
-  rng().fill_bytes(&mut large_data);
+  thread_rng().fill_bytes(&mut large_data);
 
   println!("testing with {} bytes of data", large_data.len());
 
@@ -270,7 +270,7 @@ fn security_analysis() {
 
   let key = b"securitytestkey1";
   let mut iv = [0u8; 16];
-  rng().fill_bytes(&mut iv);
+  thread_rng().fill_bytes(&mut iv);
 
   // test with identical message blocks
   let identical_blocks = b"samedata12345678".repeat(4); // 4 identical blocks
@@ -316,7 +316,7 @@ fn security_analysis() {
 
   let cbc_c1 = Aes128CbcEnc::new(key.into(), &iv.into()).encrypt_padded_vec_mut::<Pkcs7>(msg1);
 
-  rng().fill_bytes(&mut iv); // new iv for second message
+  thread_rng().fill_bytes(&mut iv); // new iv for second message
   let cbc_c2 = Aes128CbcEnc::new(key.into(), &iv.into()).encrypt_padded_vec_mut::<Pkcs7>(msg2);
 
   println!("  similar messages with ecb:");
@@ -370,7 +370,7 @@ fn attack_scenario_demo() {
     token.extend_from_slice(role.as_bytes());
 
     let mut iv = [0u8; 16];
-    rng().fill_bytes(&mut iv);
+    thread_rng().fill_bytes(&mut iv);
 
     let encrypted_token =
       Aes128CbcEnc::new(key.into(), &iv.into()).encrypt_padded_vec_mut::<Pkcs7>(&token);
