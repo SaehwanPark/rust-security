@@ -39,7 +39,7 @@ cipher = { version = "0.4", features = ["block-padding"] }
 hmac = "0.12"
 sha2 = "0.10"
 # for CLI
-clap = { version = "4.5" }
+clap = { version = "4", features = ["derive"] }
 # for secure operations
 subtle = "2.5"
 zeroize = "1.7"
