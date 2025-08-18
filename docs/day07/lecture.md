@@ -25,19 +25,19 @@ Public-key crypto solves this bootstrap; PKI solves the “who are you, really?�
 ```mermaid
 flowchart TD
   A[Choose large primes p, q] --> B[n = p * q]
-  B --> C[φ(n) = (p-1)(q-1)]
-  C --> D[Pick e (usually 65537) with gcd(e, φ)=1]
-  D --> E[Compute d ≡ e^{-1} mod φ(n)]
-  E --> F[Public key = (n, e)]
-  E --> G[Private key = (n, d)]
+  B --> C["φ(n) = (p-1)(q-1)"]
+  C --> D["Pick e (usually 65537) with gcd(e, φ)=1"]
+  D --> E["Compute d ≡ e^{-1} mod φ(n)"]
+  E --> F["Public key = (n, e)"]
+  E --> G["Private key = (n, d)"]
 ```
 
 ```mermaid
 flowchart LR
   M[Plaintext m] -->|c = m^e mod n| C[Ciphertext c]
   C -->|m = c^d mod n| M2[Recovered m]
-  F[(Public (n,e))] -. used by .-> C
-  G[(Private (n,d))] -. used by .-> M2
+  F["(Public (n,e))"] -. used by .-> C
+  G["(Private (n,d))"] -. used by .-> M2
 ```
 
 **Safety notes**: never “raw RSA”. Use OAEP for encryption and PSS for signatures. Use hybrid encryption (RSA/ECDH for keys; AES/ChaCha20 for data).
@@ -67,15 +67,15 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-  S[Message M] --> H[Hash h = H(M)]
+  S[Message M] --> H["Hash h = H(M)"]
   H --> K[Choose fresh random k]
-  K --> R[r = (k·G).x mod n]
+  K --> R["r = (k·G).x mod n"]
   H --> D[d = private key]
-  R --> S1[s = k^{-1}(h + r·d) mod n]
-  S1 --> Sig[(Signature (r, s))]
-  Sig --> V[Verify with Q = d·G]
-  V --> V1[Compute w = s^{-1} mod n; u1 = h·w; u2 = r·w]
-  V1 --> V2[X = u1·G + u2·Q; valid if X.x mod n = r]
+  R --> S1["s = k^{-1}(h + r·d) mod n"]
+  S1 --> Sig["(Signature (r, s))"]
+  Sig --> V["Verify with Q = d·G"]
+  V --> V1["Compute w = s^{-1} mod n; u1 = h·w; u2 = r·w"]
+  V1 --> V2["X = u1·G + u2·Q; valid if X.x mod n = r"]
 ```
 
 ---
@@ -280,7 +280,7 @@ flowchart TD
   C4 -- No --> R4[Reject: expired/not yet valid]
   C4 -- Yes --> C5{Key Usage/EKU allows TLS server?}
   C5 -- No --> R5[Reject: wrong usage]
-  C5 -- Yes --> C6{Revocation check OK (CRL/OCSP)?}
+  C5 -- Yes --> C6{"Revocation check OK (CRL/OCSP)?"}
   C6 -- No --> R6[Policy decision: soft/hard fail]
   C6 -- Yes --> A[Accept]
 ```
