@@ -100,139 +100,7 @@ sequenceDiagram
 
 ---
 
-## 3) Rust Touchpoints (drop-in examples)
-
-> We keep labs under `examples/` as in prior days.
-
-### 3.1 RSA-OAEP (safe encryption demo) — `examples/day07_rsa_oaep.rs`
-
-```rust
-use rand::thread_rng;
-use rsa::{Oaep, RsaPrivateKey, RsaPublicKey};
-use sha2::Sha256;
-
-fn main() {
-    let mut rng = thread_rng();
-    let bits = 2048;
-    let sk = RsaPrivateKey::new(&mut rng, bits).expect("keygen");
-    let pk = RsaPublicKey::from(&sk);
-
-    let msg = b"bootcamp day 7!";
-    let label = b"context"; // optional OAEP label
-    let enc = pk.encrypt(&mut rng, Oaep::new::<Sha256>().with_label(label), msg).expect("enc");
-    let dec = sk.decrypt(Oaep::new::<Sha256>().with_label(label), &enc).expect("dec");
-    println!("{}", String::from_utf8(dec).unwrap());
-}
-```
-
-**Cargo add**:
-
-```toml
-# Cargo.toml (excerpt)
-rsa = { version = "0.9", default-features = false, features = ["sha2"] }
-sha2 = "0.10"
-rand = "0.8"
-```
-
----
-
-### 3.2 X25519 + HKDF → Symmetric Key — `examples/day07_x25519_kdf.rs`
-
-```rust
-use x25519_dalek::{EphemeralSecret, PublicKey};
-use rand_core::OsRng;
-use hkdf::Hkdf;
-use sha2::Sha256;
-
-fn main() {
-    // Alice
-    let alice_secret = EphemeralSecret::new(OsRng);
-    let alice_public = PublicKey::from(&alice_secret);
-
-    // Bob
-    let bob_secret = EphemeralSecret::new(OsRng);
-    let bob_public = PublicKey::from(&bob_secret);
-
-    // Derive shared secrets
-    let alice_shared = alice_secret.diffie_hellman(&bob_public);
-    let bob_shared = bob_secret.diffie_hellman(&alice_public);
-    assert_eq!(alice_shared.as_bytes(), bob_shared.as_bytes());
-
-    // Derive symmetric key material with HKDF
-    let hk = Hkdf::<Sha256>::new(Some(b"day7-context"), alice_shared.as_bytes());
-    let mut key = [0u8; 32];
-    hk.expand(b"aes-256-gcm", &mut key).expect("hkdf expand");
-    println!("Derived key len={} (redacted)", key.len());
-}
-```
-
-**Cargo add**:
-
-```toml
-x25519-dalek = "2"
-hkdf = "0.12"
-sha2 = "0.10"
-rand_core = "0.6"
-```
-
----
-
-### 3.3 Parse X.509 & Inspect Fields — `examples/day07_x509_parse.rs`
-
-```rust
-use x509_parser::prelude::*;
-
-fn main() {
-    let pem = include_bytes!("../fixtures/example_server_cert.pem");
-    let (_, cert) = X509Certificate::from_pem(pem).expect("parse pem");
-
-    let subject = cert.subject();
-    let issuer = cert.issuer();
-    let not_before = cert.validity().not_before.to_rfc2822();
-    let not_after  = cert.validity().not_after.to_rfc2822();
-
-    println!("Subject: {}", subject);
-    println!("Issuer:  {}", issuer);
-    println!("Valid:   {} .. {}", not_before, not_after);
-
-    // Very *basic* sanity checks (not full validation):
-    assert!(cert.tbs_certificate.subject_pki.algorithm.algorithm.iter().any(|b| *b != 0));
-}
-```
-
-**Cargo add**:
-
-```toml
-x509-parser = "0.16"
-```
-
-> Full chain validation (hostname, EKU, policies, revocation) is more involved; we’ll wire that up tomorrow with TLS.
-
----
-
-## 4) Lab (afternoon)
-
-1. **RSA-OAEP mini**
-
-   * Implement `encrypt_file()` that hybrid-encrypts a file:
-
-     * X25519 for ephemeral key agreement → derive a symmetric key (HKDF) → AES-GCM (or ChaCha20-Poly1305) for data.
-     * Use RSA-OAEP **only** if you must wrap a symmetric key for a known RSA receiver.
-   * Prove to yourself why raw RSA or PKCS#1 v1.5 is dangerous.
-
-2. **Certificate spelunker**
-
-   * Write `certinfo` CLI: `certinfo path/to/cert.pem` → prints Subject CN, SANs, Issuer, validity, signature algo, key length, and EKU.
-   * Stretch: add a `--hostname example.com` flag and implement hostname matching per RFC 6125 (CN is deprecated; prefer SANs).
-
-3. **Project 2 tie-in (Secure Chat)**
-
-   * Replace yesterday’s fixed test key with **X25519 ephemeral** key agreement on connect, derive a session key via HKDF, then use AES-GCM for chat messages.
-   * Serialize the client’s ephemeral pubkey first; server responds with its pubkey; both derive.
-
----
-
-## 5) Pitfalls & Red Flags (the “security engineer’s spidey-sense”)
+## 3) Pitfalls & Red Flags (the “security engineer’s spidey-sense”)
 
 * Using RSA to encrypt bulk data (don’t — use hybrid).
 * PKCS#1 v1.5 padding for encryption (use **OAEP**).
@@ -242,7 +110,7 @@ x509-parser = "0.16"
 
 ---
 
-## 6) Quick Checks (self-quiz)
+## 4) Quick Checks (self-quiz)
 
 1. Why does public-key crypto solve the “first key” problem that symmetric crypto has?
 2. In DH, Eve sees $g^a$ and $g^b$. Why can’t she compute the shared secret?
@@ -252,7 +120,7 @@ x509-parser = "0.16"
 
 ---
 
-## 7) Reading & Reflection (evening)
+## 5) Reading & Reflection (evening)
 
 * Boneh & Shoup, Chapters 12–14 (RSA, DH, signatures, PKI).
 * Case study: DigiNotar 2011 — how a CA breach undermines the web of trust.
@@ -260,7 +128,7 @@ x509-parser = "0.16"
 
 ---
 
-## 8) Tomorrow’s Bridge
+## 6) Tomorrow’s Bridge
 
 We’ll take these primitives into the real world: **TLS**. You’ll trace the handshake, spot where DH/X25519, signatures, and certificates fit, and build a small TLS service with `rustls`.
 
