@@ -9,7 +9,7 @@ Today’s lab is your hands-on journey into **asymmetric cryptography**. You wil
 3. Parse and inspect X.509 certificates.
 4. Attempt a minimal verification workflow.
 
-Keep your code in `examples/day07/` for consistency.
+Keep your code in `examples/` for consistency.
 
 ---
 
@@ -101,29 +101,11 @@ Keep your code in `examples/day07/` for consistency.
 
 ---
 
-## Part 5: Integration with Project 2 (Secure Chat)
-
-### Task
-
-* Replace your fixed test key from Day 6’s Secure Chat with:
-
-  * **RSA key exchange**: server holds RSA private key; client encrypts a session key with server’s public key.
-  * OR **X25519 ephemeral key exchange** (preferred).
-
-### Hints
-
-* RSA approach is simpler but less modern. Try it first for practice.
-* Ensure that after the key exchange, you still encrypt actual messages symmetrically (AES-GCM or ChaCha20-Poly1305).
-* This will prepare you for **Day 8 TLS**.
-
----
-
 ## Deliverables
 
 * `examples/rsa.rs` — basic RSA demo.
 * `examples/rsa_bench.rs` — benchmarks for key sizes and padding.
 * `examples/certinfo.rs` — certificate inspector tool.
-* Updated Secure Chat with RSA/X25519 exchange.
 
 ---
 
