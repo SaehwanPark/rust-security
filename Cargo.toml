@@ -35,8 +35,16 @@ image = { version = "0.25", optional = true }
 # cipher traits for generic programming
 cipher = { version = "0.4", features = ["block-padding"] }
 
-rsa = { version = "0.9", default-features = false, features = ["sha2"] }
+# for comparison with our implementation
+hmac = "0.12"
 sha2 = "0.10"
+# for CLI
+clap = { version = "4.5" }
+# for secure operations
+subtle = "2.5"
+zeroize = "1.7"
+
+rsa = { version = "0.9", default-features = false, features = ["sha2"] }
 
 x25519-dalek = "2"
 hkdf = "0.12"
@@ -49,3 +57,7 @@ criterion = "0.7"
 [features]
 default = []
 image_demo = ["image"]
+
+# [[bench]]
+# name = "hmac_benchmark"
+# harness = false
