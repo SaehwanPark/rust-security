@@ -26,20 +26,30 @@ struct Args {
   check_signature: bool,
 }
 
-fn load_x509_pem(path: &str) -> Result<X509Certificate<'_>> {
-  let data = std::fs::read(path).with_context(|| format!("reading {}", path))?;
-  let (_, pem) =
-    x509_parser::pem::parse_x509_pem(&data).with_context(|| format!("parsing PEM in {}", path))?;
-  let (_, cert) =
-    X509Certificate::from_der(pem.contents.as_ref()).with_context(|| "decoding certificate DER")?;
-  Ok(cert)
+// helper structure to hold both the data and certificate together
+struct CertificateData {
+  der_data: Vec<u8>,
 }
 
-fn main() -> Result<()> {
-  let args = Args::parse();
+impl CertificateData {
+  fn from_pem_file(path: &str) -> Result<Self> {
+    let pem_data = std::fs::read(path).with_context(|| format!("reading {}", path))?;
+    let (_, pem) = x509_parser::pem::parse_x509_pem(&pem_data)
+      .with_context(|| format!("parsing PEM in {}", path))?;
 
-  // Load leaf
-  let cert = load_x509_pem(&args.cert)?;
+    Ok(CertificateData {
+      der_data: pem.contents.to_vec(),
+    })
+  }
+
+  fn parse_certificate(&self) -> Result<X509Certificate<'_>> {
+    let (_, cert) =
+      X509Certificate::from_der(&self.der_data).with_context(|| "decoding certificate DER")?;
+    Ok(cert)
+  }
+}
+
+fn print_certificate_info(cert: &X509Certificate<'_>) {
   println!("== Certificate ==");
   println!("Subject  : {}", cert.subject());
   println!("Issuer   : {}", cert.issuer());
@@ -51,39 +61,45 @@ fn main() -> Result<()> {
   let alg = &cert.public_key().algorithm.algorithm;
   println!("Public Key Algorithm: {}", alg);
 
-  // Try to extract RSA modulus size if RSA
+  // try to extract RSA modulus size if RSA
   let spk = cert.public_key();
-  // SPKI BIT STRING contains the DER-encoded PKCS#1 RSAPublicKey
-  let der = spk.subject_public_key.data;
+  // clone the data to avoid moving out of shared reference
+  let der = spk.subject_public_key.data.clone();
   if let Ok(rsa_pk) = RsaPublicKey::from_pkcs1_der(&der) {
     println!("RSA key size (bits): {}", rsa_pk.size() * 8);
     println!("RSA exponent       : {}", rsa_pk.e());
   } else {
-    println!("(RSA details unavilable: SPKI didn't decode as PKCS#1 RSAPublicKey)")
+    println!("(RSA details unavailable: SPKI didn't decode as PKCS#1 RSAPublicKey)")
   }
+}
 
-  // Part 4: minimal checks
+fn perform_minimal_checks(
+  cert: &X509Certificate<'_>,
+  ca_data: Option<&CertificateData>,
+  check_signature: bool,
+) -> Result<()> {
   println!("\n== Minimal Checks ==");
-  // 1) Validity window
-  let now = time::OffsetDateTime::now_utc();
+
+  // 1) validity window
+  let now = ::time::OffsetDateTime::now_utc();
   let not_before = cert.validity().not_before.to_datetime();
   let not_after = cert.validity().not_after.to_datetime();
   let time_ok = now >= not_before && now <= not_after;
   println!("Current time within validity window? {}", time_ok);
 
-  // 2) Issuer-subject equality (when CA provided)
-  if let Some(issuer_path) = args.issuer.as_deref() {
-    let ca = load_x509_pem(issuer_path)?;
+  // 2) issuer-subject equality (when CA provided)
+  if let Some(ca_data) = ca_data {
+    let ca = ca_data.parse_certificate()?;
     let issuer_matches = cert.issuer() == ca.subject();
     println!("Issuer matches provided CA subject? {}", issuer_matches);
 
-    // 3) (Bonus/advanced) Signature verification sketch with `ring`
-    if args.check_signature {
+    // 3) (bonus/advanced) signature verification sketch with `ring`
+    if check_signature {
       use ring::signature;
       let spki = ca.public_key();
-      // Prepare ring verifier from issuer SPKI
+      // prepare ring verifier from issuer SPKI
       let alg_id = &cert.signature_algorithm.algorithm;
-      // Basic mapping for RSA-with-SHA256 (extend as needed)
+      // basic mapping for RSA-with-SHA256 (extend as needed)
       let ring_alg = if alg_id == &oid_registry::OID_PKCS1_SHA256WITHRSA {
         &signature::RSA_PKCS1_2048_8192_SHA256
       } else {
@@ -102,6 +118,27 @@ fn main() -> Result<()> {
   } else {
     println!("(No CA provided; skipped issuer and signature checks.)");
   }
+
+  Ok(())
+}
+
+fn main() -> Result<()> {
+  let args = Args::parse();
+
+  // load leaf certificate data
+  let cert_data = CertificateData::from_pem_file(&args.cert)?;
+  let cert = cert_data.parse_certificate()?;
+
+  print_certificate_info(&cert);
+
+  // load issuer certificate data if provided
+  let ca_data = if let Some(issuer_path) = args.issuer.as_deref() {
+    Some(CertificateData::from_pem_file(issuer_path)?)
+  } else {
+    None
+  };
+
+  perform_minimal_checks(&cert, ca_data.as_ref(), args.check_signature)?;
 
   Ok(())
 }
